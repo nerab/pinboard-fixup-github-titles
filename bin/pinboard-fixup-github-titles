@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+require 'octokit'
+require 'pinboard'
+
+pinboard = Pinboard::Client.new(:token => ENV.fetch('PINBOARD_API_TOKEN'))
+posts = pinboard.posts(meta: true)
+
+# Authentication is required due to Github's API rate limit
+github = Octokit::Client.new(:netrc => true)
+
+if github.login
+  STDERR.puts "#{github.login} logged on to github"
+else
+  STDERR.puts 'Login to github failed. Check your ~/.netrc file.'
+  exit 1
+end
+
+STDERR.puts "Checking #{posts.size} bookmarks:"
+updated = 0
+
+posts.each do |post|
+  begin
+    next unless md = %r{//github.com/([^/]+/[^/]+)}.match(post.href)
+
+    repo = github.repo(md[1])
+    canonical_description = "#{repo.name}: #{repo.description}"
+
+    if post.description == canonical_description
+      STDOUT.puts "✓ #{canonical_description}"
+      next
+    end
+
+    STDERR.puts "Updating '#{post.description}' => '#{canonical_description}'"
+
+    tags = post.tag
+    tags << 'github' unless tags.include?('github')
+    tags << repo.language
+
+    pinboard.add(
+      url: post.href,
+      description: canonical_description,
+      extended: post.extended,
+      tags: tags,
+      replace: true,
+      shared: true,
+      toread: false,
+    )
+
+    updated += 1
+  rescue
+    STDOUT.puts "⨯ #{post.href} #{$!.message}"
+  end
+end
+
+STDERR.puts "Updated #{updated} of #{posts.size} bookmarks."
