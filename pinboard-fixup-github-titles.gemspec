@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'pinboard/fixup-github-titles/version'
+require 'pinboard-fixup-github-titles/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "pinboard-fixup-github-titles"
-  spec.version       = Pinboard::FixupGithubTitles::VERSION
+  spec.version       = PinboardFixupGithubTitles::VERSION
   spec.authors       = ["Nicholas E. Rabenau"]
   spec.email         = ["nerab@gmx.at"]
   spec.summary       = %q{Fixup titles of github bookmarks in Pinboard}
@@ -22,8 +22,17 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'pinboard'
   spec.add_dependency 'netrc'
 
-  spec.add_development_dependency "bundler"
-  spec.add_development_dependency "rake"
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'minitest'
+  spec.add_development_dependency 'guard-minitest'
+  spec.add_development_dependency 'guard-bundler'
+  spec.add_development_dependency 'libnotify'
+  spec.add_development_dependency 'rb-inotify'
+  spec.add_development_dependency 'rb-fsevent'
   spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'pry-byebug'
+#  spec.add_development_dependency 'pry-byebug'
+  spec.add_development_dependency 'pry-nav'
+  spec.add_development_dependency 'pry-stack_explorer'
+  spec.add_development_dependency 'rb-readline'
 end

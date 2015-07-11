@@ -1,21 +1,35 @@
 #!/usr/bin/env ruby
 
+require 'netrc'
 require 'octokit'
 require 'pinboard'
+require 'pinboard-fixup-github-titles'
+include PinboardFixupGithubTitles
 
-pinboard = Pinboard::Client.new(:token => ENV.fetch('PINBOARD_API_TOKEN'))
-posts = pinboard.posts(meta: true)
-
-# Authentication is required due to Github's API rate limit
-github = Octokit::Client.new(:netrc => true)
-
-if github.login
-  STDERR.puts "#{github.login} logged on to github"
+if pinboard_api_token = ENV['PINBOARD_API_TOKEN']
+  pinboard = Pinboard::Client.new(:token => pinboard_api_token)
+  STDERR.puts "Logged on to Pinboard as #{pinboard_api_token.split(':').first}"
 else
-  STDERR.puts 'Login to github failed. Check your ~/.netrc file.'
+  STDERR.puts "Pinboard API token missing."
   exit 1
 end
 
+# Authentication is required due to Github's API rate limit
+begin
+  github = Octokit::Client.new(GithubCredentialsResolver.new.resolve)
+rescue GithubCredentialsResolver::MissingCredentials
+  STDERR.puts $!.message
+  exit 2
+end
+
+if github.login
+  STDERR.puts "Logged on to github.com as #{github.user.login}"
+else
+  STDERR.puts 'Login to github failed. Check your credentials.'
+  exit 3
+end
+
+posts = pinboard.posts(meta: true)
 STDERR.puts "Checking #{posts.size} bookmarks:"
 updated = 0
 
