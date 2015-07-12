@@ -48,9 +48,12 @@ After executing the `pinboard-fixup-github-titles` tool once, the container will
 
 ## Start the container
 
-Now create a cron job that runs the container on a regular basis:
-
     $ docker start pinboard-fixup-github-titles
+
+Now create a cron job that runs the container every hour:
+
+    $ crontab -e
+    36 * * * * sudo docker start pinboard-fixup-github-titles
 
 The environment variables were passed when running the container for the first time, so there is no need to pass them at start again.
 
