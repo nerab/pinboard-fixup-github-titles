@@ -1,16 +1,29 @@
 #!/usr/bin/env ruby
 
+require 'logger'
 require 'netrc'
 require 'octokit'
 require 'pinboard'
+
 require 'pinboard-fixup-github-titles'
 include PinboardFixupGithubTitles
 
+logger = Logger.new(STDERR)
+logger.progname = File.basename(__FILE__)
+desired_log_level = ENV.fetch('LOG_LEVEL', 'INFO')
+
+begin
+  logger.level = Logger::Severity.const_get(desired_log_level)
+rescue NameError
+  logger.level = Logger::Severity::WARN
+  logger.warn("Error evaluating log level #{desired_log_level}. Using #{Logger::Severity.constants[logger.level]} instead.")
+end
+
 if pinboard_api_token = ENV['PINBOARD_API_TOKEN']
   pinboard = Pinboard::Client.new(:token => pinboard_api_token)
-  STDERR.puts "Logged on to Pinboard as #{pinboard_api_token.split(':').first}"
+  logger.info "Logged on to Pinboard as #{pinboard_api_token.split(':').first}"
 else
-  STDERR.puts "Pinboard API token missing."
+  logger.error "Pinboard API token missing."
   exit 1
 end
 
@@ -18,34 +31,50 @@ end
 begin
   github = Octokit::Client.new(GithubCredentialsResolver.new.resolve)
 rescue GithubCredentialsResolver::MissingCredentials
-  STDERR.puts $!.message
+  logger.error $!.message
   exit 2
 end
 
 if github.login
-  STDERR.puts "Logged on to github.com as #{github.user.login}"
+  logger.info "Logged on to github.com as #{github.user.login}"
 else
-  STDERR.puts 'Login to github failed. Check your credentials.'
+  logger.error 'Login to github failed. Check your credentials.'
   exit 3
 end
 
+# TODO dry-run via env var or parameter
+# TODO Move the following into a class and add callbacks for progress
+
 posts = pinboard.posts(meta: true)
-STDERR.puts "Checking #{posts.size} bookmarks:"
-updated = 0
+logger.info "Processing #{posts.size} bookmarks"
+
+stats = Stats.new
+stats.gauge(:total, posts.size)
 
 posts.each do |post|
   begin
-    next unless md = %r{//github.com/([^/]+/[^/]+)}.match(post.href)
-
-    repo = github.repo(md[1])
-    canonical_description = "#{repo.name}: #{repo.description}"
-
-    if post.description == canonical_description
-      STDOUT.puts "✓ #{canonical_description}"
+    unless md = %r{//github.com/([^/]+/[^/]+)}.match(post.href)
+      stats.increment(:not_applicable)
       next
     end
 
-    STDERR.puts "Updating '#{post.description}' => '#{canonical_description}'"
+    repo = github.repo(md[1])
+
+    if repo.description.empty?
+      stats.increment(:empty)
+      logger.warn "#{repo.name}: No description in the github repo."
+      next
+    end
+
+    canonical_description = "#{repo.name}: #{repo.description}"
+
+    if post.description == canonical_description
+      stats.increment(:up_to_date)
+      logger.info "#{repo.name}: Up to date"
+      next
+    end
+
+    logger.info "#{repo.name}: Updating from '#{post.description}' to '#{canonical_description}'"
 
     tags = post.tag
     tags << 'github' unless tags.include?('github')
@@ -57,14 +86,15 @@ posts.each do |post|
       extended: post.extended,
       tags: tags,
       replace: true,
-      shared: true,
-      toread: false,
+      shared: post.shared,
+      toread: post.toread,
     )
 
-    updated += 1
+    stats.increment(:updated)
   rescue
-    STDOUT.puts "⨯ #{post.href} #{$!.message}"
+    stats.increment(:errors)
+    logger.error "#{post.href} #{$!.message}"
   end
 end
 
-STDERR.puts "Updated #{updated} of #{posts.size} bookmarks."
+logger.info "Done: #{stats}"

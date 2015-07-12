@@ -60,8 +60,59 @@ class TestGithubCredentialsResolver < MiniTest::Test
     assert(github_credentials)
     assert(github_credentials[:netrc])
     assert_equal(netrc.path, github_credentials[:netrc_file])
-  ensure
-    netrc.delete if netrc
+  end
+
+  def test_login_password
+    env['GITHUB_LOGIN'] = 'foo'
+    env['GITHUB_PASSWORD'] = 'bar'
+
+    github_credentials = ghcr.resolve
+
+    assert(github_credentials)
+    assert_equal('foo', github_credentials[:login])
+    assert_equal('bar', github_credentials[:password])
+  end
+
+  def test_client_id_secret
+    env['GITHUB_CLIENT_ID'] = 'foobar'
+    env['GITHUB_CLIENT_SECRET'] = '********'
+
+    github_credentials = ghcr.resolve
+
+    assert(github_credentials)
+    assert_equal('foobar', github_credentials[:client_id])
+    assert_equal('********', github_credentials[:client_secret])
+  end
+
+  def test_login_password_precedence
+    env['GITHUB_LOGIN'] = 'foo'
+    env['GITHUB_PASSWORD'] = 'bar'
+    env['GITHUB_CLIENT_ID'] = 'foobar'
+    env['GITHUB_CLIENT_SECRET'] = '********'
+    netrc.add('api.github.com' => {
+      login: 'nerab',
+      password: '********',
+    })
+
+    github_credentials = ghcr.resolve
+
+    assert(github_credentials)
+    assert_equal('foo', github_credentials[:login])
+    assert_equal('bar', github_credentials[:password])
+  end
+
+  def test_client_id_precedence
+    env['GITHUB_CLIENT_ID'] = 'foobar'
+    env['GITHUB_CLIENT_SECRET'] = '********'
+    netrc.add('api.github.com' => {
+      login: 'nerab',
+      password: '********',
+    })
+
+    github_credentials = ghcr.resolve
+
+    assert(github_credentials)
+    assert_equal('foobar', github_credentials[:client_id])
+    assert_equal('********', github_credentials[:client_secret])
   end
 end
-

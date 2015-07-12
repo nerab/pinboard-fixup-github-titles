@@ -26,7 +26,8 @@ The tool will read your github credentials from `netrc`.
 
 ## Build a container from the image
 
-    $ docker build -t nerab/pinboard-fixup-github-titles .
+    # Build and tag as the latest version of the image
+    $ docker build --tag nerab/pinboard-fixup-github-titles:latest .
 
 ## Instantiate the container
 
@@ -38,15 +39,12 @@ The tool will read your github credentials from `netrc`.
 
 Change the environment variables to suit your preferences. The following environment variables are evaluated (in ascending order of preference):
 
-    GITHUB_LOGIN and GITHUB_PASSWORD
+1. `GITHUB_LOGIN` and `GITHUB_PASSWORD`
+1. `GITHUB_ACCESS_TOKEN`
+1. `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+1. `NETRC_FILE` (not useful for docker deployments)
 
-    GITHUB_ACCESS_TOKEN
-
-    GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET
-
-    NETRC_FILE (not useful for docker deployments)
-
-After running, the container will stop.
+After executing the `pinboard-fixup-github-titles` tool once, the container will stop.
 
 ## Start the container
 
@@ -55,3 +53,7 @@ Now create a cron job that runs the container on a regular basis:
     $ docker start pinboard-fixup-github-titles
 
 The environment variables were passed when running the container for the first time, so there is no need to pass them at start again.
+
+Starting a container will not print its console messages. If you want to follow the execution, use `docker logs`:
+
+    $ docker logs -f pinboard-fixup-github-titles
