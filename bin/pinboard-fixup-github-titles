@@ -60,7 +60,7 @@ posts.each do |post|
 
     repo = github.repo(md[1])
 
-    if repo.description.empty?
+    if repo.description.nil? || repo.description.empty?
       stats.increment(:empty)
       logger.warn "#{repo.name}: Skipping because there is no description in the github repo."
       next
