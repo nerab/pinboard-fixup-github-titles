@@ -62,7 +62,7 @@ posts.each do |post|
 
     if repo.description.empty?
       stats.increment(:empty)
-      logger.warn "#{repo.name}: No description in the github repo."
+      logger.warn "#{repo.name}: Skipping because there is no description in the github repo."
       next
     end
 
