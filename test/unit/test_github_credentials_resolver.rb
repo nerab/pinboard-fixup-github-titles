@@ -1,38 +1,46 @@
 require 'helper'
 require 'tempfile'
 require 'netrc'
+require 'forwardable'
 
 class TestGithubCredentialsResolver < MiniTest::Test
   class TempNetRC
+    extend Forwardable
+    def_delegators :@netrc_file, :path, :delete
+
     def initialize(data = {})
-      @netrc = Tempfile.new(self.class.name).tap do |temp_file|
-        n = Netrc.read(temp_file)
+      @netrc_file = Tempfile.new(self.class.name)
+      add(data)
+    end
 
-        data.each do |machine, kp|
-          n[machine] = kp.values
-        end
+    def add(data)
+      netrc = Netrc.read(netrc_file)
 
-        n.save
+      data.each do |machine, kp|
+        netrc[machine] = kp.values
       end
+
+      netrc.save
     end
 
-    # TODO Delegate
-    def path
-      @netrc.path
-    end
-
-    # TODO Alias and then delegate?
-    def delete
-      @netrc.unlink
-    end
+  private
+    attr_reader :netrc_file
   end
 
   include PinboardFixupGithubTitles
-  attr_reader :env, :ghcr
+  attr_reader :env, :netrc, :ghcr
 
   def setup
+    @netrc = TempNetRC.new
+
     @env = {}
+    env['NETRC_FILE'] = netrc.path
+
     @ghcr = GithubCredentialsResolver.new(env)
+  end
+
+  def teardown
+    netrc.delete
   end
 
   def test_no_credentials_present
@@ -42,11 +50,10 @@ class TestGithubCredentialsResolver < MiniTest::Test
   end
 
   def test_netrc
-    netrc = TempNetRC.new('api.github.com' => {
+    netrc.add('api.github.com' => {
       login: 'nerab',
       password: '********',
     })
-    env['NETRC_FILE'] = netrc.path
 
     github_credentials = ghcr.resolve
 
@@ -54,7 +61,7 @@ class TestGithubCredentialsResolver < MiniTest::Test
     assert(github_credentials[:netrc])
     assert_equal(netrc.path, github_credentials[:netrc_file])
   ensure
-    netrc.delete
+    netrc.delete if netrc
   end
 end
 
