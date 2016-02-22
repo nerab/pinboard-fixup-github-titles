@@ -9,8 +9,6 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Nicholas E. Rabenau"]
   spec.email         = ["nerab@gmx.at"]
   spec.summary       = %q{Fixup titles of github bookmarks in Pinboard}
-#  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
@@ -31,7 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rb-inotify'
   spec.add_development_dependency 'rb-fsevent'
   spec.add_development_dependency 'pry'
-#  spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'pry-nav'
   spec.add_development_dependency 'pry-stack_explorer'
   spec.add_development_dependency 'rb-readline'
