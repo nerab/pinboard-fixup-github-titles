@@ -24,12 +24,14 @@ The tool will read your github credentials from `netrc`.
 
 # Deployment
 
-## Build a container from the image
+This is setup as automated build on the [docker hub](https://hub.docker.com/r/nerab/pinboard-fixup-github-titles/).
+
+Optionally, you can build the image manually:
 
     # Build and tag as the latest version of the image
     $ docker build --tag nerab/pinboard-fixup-github-titles:latest .
 
-## Instantiate the container
+## Run the container
 
     $ docker run \
         --env PINBOARD_API_TOKEN=******** \
