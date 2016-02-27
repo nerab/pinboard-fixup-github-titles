@@ -12,26 +12,35 @@ The page titles that github produces suck. The repo's description is much more u
 
 # Usage
 
-1. Set your github.com credentials in `.netrc` (preferred) or any other of the ways supported by [octokit.rb](http://octokit.github.io/octokit.rb/#Authentication).
+1. Set your github.com credentials in `.netrc` or any other of the ways supported by [octokit.rb](http://octokit.github.io/octokit.rb/#Authentication).
 
-1. Get the API token from the Pinboard [password](https://pinboard.in/settings/password) page and set (or pass) it as environment variable.
+1. Get the API token from the Pinboard [password](https://pinboard.in/settings/password) page and set it as environment variable.
+
+        $ export PINBOARD_API_TOKEN=********
 
 1. Run the tool:
 
-    $ PINBOARD_API_TOKEN=******** pinboard-fixup-github-titles
+        $ pinboard-fixup-github-titles
 
 The tool will read your github credentials from `netrc`.
 
-# Deployment
+# Docker Image
 
-This is setup as automated build on the [docker hub](https://hub.docker.com/r/nerab/pinboard-fixup-github-titles/).
+An automated build on the [docker hub](https://hub.docker.com/r/nerab/pinboard-fixup-github-titles/) creates a new image tagged with `latest` upon a git push.
 
 Optionally, you can build the image manually:
 
     # Build and tag as the latest version of the image
     $ docker build --tag nerab/pinboard-fixup-github-titles:latest .
 
-## Run the container
+# Deployment
+
+## Generate the run helper
+
+* Install `lpass`
+* Generate the deployment script `scripts/generate-deployment-script > scripts/run.sh`
+
+If desired, you may run the container manually:
 
     $ docker run \
         --env PINBOARD_API_TOKEN=******** \
@@ -46,19 +55,17 @@ Change the environment variables to suit your preferences. The following environ
 1. `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
 1. `NETRC_FILE` (not useful for docker deployments)
 
-After executing the `pinboard-fixup-github-titles` tool once, the container will stop.
-
 ## Start the container
 
-    $ docker start pinboard-fixup-github-titles
+Run the previously generated `scripts/run.sh`. This will generate a new container from the image and execute the `pinboard-fixup-github-titles` tool once. The container will then stop.
 
-Now create a cron job that runs the container every hour:
+In order to run the tool regularly, create a cron job that runs the container e.g. every hour:
 
     $ crontab -e
-    36 * * * * sudo docker start pinboard-fixup-github-titles
+    36 * * * * docker start -a pinboard-fixup-github-titles
 
-The environment variables were passed when running the container for the first time, so there is no need to pass them at start again.
+The environment variables were passed when running the container for the first time, so there is no need to pass them to `docker start` again.
 
-Starting a container will not print its console messages. If you want to follow the execution, use `docker logs`:
+A container will not print its console messages to where it was started from. If you want to follow the execution, use `docker logs`:
 
     $ docker logs -f pinboard-fixup-github-titles

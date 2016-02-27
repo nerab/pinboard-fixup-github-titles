@@ -42,9 +42,6 @@ else
   exit 3
 end
 
-# TODO dry-run via env var or parameter
-# TODO Move the following into a class and add callbacks for progress
-
 posts = pinboard.posts(meta: true)
 logger.info "Processing #{posts.size} bookmarks"
 
