@@ -69,3 +69,15 @@ The environment variables were passed when running the container for the first t
 A container will not print its console messages to where it was started from. If you want to follow the execution, use `docker logs`:
 
     $ docker logs -f pinboard-fixup-github-titles
+
+## Update the container
+
+```
+docker pull nerab/pinboard-fixup-github-titles
+
+# This will fail in most cases because the container is only running once an hour
+docker stop nerab/pinboard-fixup-github-titles
+
+docker rm nerab/pinboard-fixup-github-titles
+./scripts/run.sh
+```
