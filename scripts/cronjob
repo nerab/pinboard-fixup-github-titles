@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Run pinboard-fixup-github-titles
+#
+docker start -a pinboard-fixup-github-titles

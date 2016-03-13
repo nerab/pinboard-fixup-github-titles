@@ -59,12 +59,15 @@ Change the environment variables to suit your preferences. The following environ
 
 Run the previously generated `scripts/run.sh`. This will generate a new container from the image and execute the `pinboard-fixup-github-titles` tool once. The container will then stop.
 
-In order to run the tool regularly, create a cron job that runs the container e.g. every hour:
+In order to run the tool regularly, copy the cron script `scripts/` to `/etc/cron.hourly/`, e.g. with
 
-    $ crontab -e
-    36 * * * * docker start -a pinboard-fixup-github-titles
+```
+docker-machine scp scripts/cronjob nr-docker:/etc/cron.hourly/pinboard-fixup-github-titles
+```
 
 The environment variables were passed when running the container for the first time, so there is no need to pass them to `docker start` again.
+
+## Logs
 
 A container will not print its console messages to where it was started from. If you want to follow the execution, use `docker logs`:
 
