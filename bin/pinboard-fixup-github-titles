@@ -82,8 +82,8 @@ posts.each do |post|
       description: canonical_description,
       extended: post.extended,
       tags: tags,
-      replace: true,
-      shared: post.shared,
+      replace: 'yes',
+      shared: post.shared ? post.shared : 'yes',
       toread: post.toread,
     )
 
