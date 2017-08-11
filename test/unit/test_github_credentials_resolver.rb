@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'helper'
 require 'tempfile'
 require 'netrc'
@@ -8,7 +10,7 @@ class TestGithubCredentialsResolver < MiniTest::Test
     extend Forwardable
     def_delegators :@netrc_file, :path, :delete
 
-    def initialize(data = {})
+    def initialize(data={})
       @netrc_file = Tempfile.new(self.class.name)
       add(data)
     end
@@ -23,7 +25,8 @@ class TestGithubCredentialsResolver < MiniTest::Test
       netrc.save
     end
 
-  private
+    private
+
     attr_reader :netrc_file
   end
 

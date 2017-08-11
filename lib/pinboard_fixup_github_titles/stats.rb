@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PinboardFixupGithubTitles
   class Stats
     class Tracked
@@ -12,7 +14,8 @@ module PinboardFixupGithubTitles
         "#{@name}: #{@value}"
       end
 
-    protected
+      protected
+
       attr_writer :value
     end
 
@@ -39,8 +42,8 @@ module PinboardFixupGithubTitles
     end
 
     def initialize
-      @counters = Hash.new{|stats, name| stats[name] = Counter.new(name)}
-      @gauges = Hash.new{|stats, name| stats[name] = Gauge.new(name)}
+      @counters = Hash.new { |stats, name| stats[name] = Counter.new(name) }
+      @gauges = Hash.new { |stats, name| stats[name] = Gauge.new(name) }
     end
 
     def increment(name)
@@ -51,7 +54,7 @@ module PinboardFixupGithubTitles
       @counters[name].value
     end
 
-    def gauge(name, value = nil)
+    def gauge(name, value=nil)
       if value
         @gauges[name].update(value)
       else
@@ -60,7 +63,7 @@ module PinboardFixupGithubTitles
     end
 
     def to_s
-      (@counters.values + @gauges.values).sort{|a,b| a.name <=> b.name}.join(', ')
+      (@counters.values + @gauges.values).sort_by(&:name).join(', ')
     end
   end
 end

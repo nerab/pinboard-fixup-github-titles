@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'helper'
 
 class TestStats < MiniTest::Test
@@ -34,6 +36,6 @@ class TestStats < MiniTest::Test
       stats.increment(:creates)
     end
 
-    assert_equal("creates: 3, people: 11, posts: 42, updates: 1", stats.to_s)
+    assert_equal('creates: 3, people: 11, posts: 42, updates: 1', stats.to_s)
   end
 end

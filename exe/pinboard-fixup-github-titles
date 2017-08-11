@@ -1,11 +1,12 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'logger'
 require 'netrc'
 require 'octokit'
 require 'pinboard'
 
-require 'pinboard-fixup-github-titles'
+require 'pinboard_fixup_github_titles'
 include PinboardFixupGithubTitles
 
 logger = Logger.new(STDERR)
@@ -20,10 +21,10 @@ rescue NameError
 end
 
 if pinboard_api_token = ENV['PINBOARD_API_TOKEN']
-  pinboard = Pinboard::Client.new(:token => pinboard_api_token)
+  pinboard = Pinboard::Client.new(token: pinboard_api_token)
   logger.info "Logged on to Pinboard as #{pinboard_api_token.split(':').first}"
 else
-  logger.error "Pinboard API token missing."
+  logger.error 'Pinboard API token missing.'
   exit 1
 end
 
@@ -31,7 +32,7 @@ end
 begin
   github = Octokit::Client.new(GithubCredentialsResolver.new.resolve)
 rescue GithubCredentialsResolver::MissingCredentials
-  logger.error $!.message
+  logger.error $ERROR_INFO.message
   exit 2
 end
 
@@ -48,6 +49,7 @@ logger.info "Processing #{posts.size} bookmarks"
 stats = Stats.new
 stats.gauge(:total, posts.size)
 
+# rubocop:disable Metrics/BlockLength
 posts.each do |post|
   begin
     unless md = %r{//github.com/([^/]+/[^/]+)}.match(post.href)
@@ -75,6 +77,7 @@ posts.each do |post|
 
     tags = post.tag
     tags << 'github' unless tags.include?('github')
+    tags << 'pinboard-fixup-github-titles' unless tags.include?('pinboard-fixup-github-titles')
     tags << repo.language
 
     pinboard.add(
@@ -90,7 +93,7 @@ posts.each do |post|
     stats.increment(:updated)
   rescue
     stats.increment(:errors)
-    logger.error "#{post.href} #{$!.message}"
+    logger.error "#{post.href} #{$ERROR_INFO.message}"
   end
 end
 
