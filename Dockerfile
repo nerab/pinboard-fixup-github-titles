@@ -5,4 +5,4 @@ ADD . /app
 WORKDIR /app
 RUN bundle install
 
-CMD bundle exec bin/pinboard-fixup-github-titles
+CMD bundle exec exe/pinboard-fixup-github-titles

@@ -38,7 +38,11 @@ Optionally, you can build the image manually:
 ## Generate the run helper
 
 * Install `lpass`
-* Generate the deployment script `scripts/generate-deployment-script > scripts/run.sh`
+* Generate the deployment script:
+
+  ```bash
+  scripts/generate-deployment-script > scripts/run.sh
+  ```
 
 If desired, you may run the container manually:
 
