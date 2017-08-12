@@ -54,6 +54,15 @@ def page_title(url)
   Nokogiri::HTML(open(url)).at_css('h1.gh-header-title').text
 end
 
+def show_rate_limit(rate, logger)
+  logger.info "rate limit: #{rate.limit}"
+  logger.info "remaining: #{rate.remaining}"
+  logger.info "resets_at: #{rate.resets_at}"
+  logger.info "resets_in: #{rate.resets_in}"
+end
+
+show_rate_limit(github.rate_limit, logger)
+
 # rubocop:disable Metrics/BlockLength
 posts.each do |post|
   begin
@@ -104,7 +113,8 @@ posts.each do |post|
     stats.increment(:updated)
   rescue
     stats.increment(:errors)
-    logger.error "#{post.href} #{$ERROR_INFO.message}"
+    logger.error "Could not handle #{post.href}: #{ERROR_INFO.class} - #{$ERROR_INFO.message}"
+    show_rate_limit(github.rate_limit, logger)
   end
 end
 
