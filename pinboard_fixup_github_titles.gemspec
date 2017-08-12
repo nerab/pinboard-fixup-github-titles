@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'octokit'
   spec.add_dependency 'pinboard'
   spec.add_dependency 'netrc'
+  spec.add_dependency 'nokogiri'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'

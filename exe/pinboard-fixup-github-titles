@@ -50,6 +50,10 @@ logger.info "Processing #{posts.size} bookmarks"
 stats = Stats.new
 stats.gauge(:total, posts.size)
 
+def page_title(url)
+  Nokogiri::HTML(open(url)).at_css('h1.gh-header-title').text
+end
+
 # rubocop:disable Metrics/BlockLength
 posts.each do |post|
   begin
@@ -66,7 +70,18 @@ posts.each do |post|
       next
     end
 
-    canonical_description = "#{repo.name}: #{repo.description}"
+    tags = post.tag
+    tags << 'github' unless tags.include?('github')
+    tags << 'pinboard-fixup-github-titles' unless tags.include?('pinboard-fixup-github-titles')
+    tags << repo.language
+
+    if %r{//github.com/([^/]+/[^/]+)/wiki}.match(post.href)
+      canonical_description = "#{repo.name}: #{page_title(post.href)}"
+      tags << 'wiki' unless tags.include?('wiki')
+      stats.increment(:wiki)
+     else
+      canonical_description = "#{repo.name}: #{repo.description}"
+    end
 
     if post.description == canonical_description
       stats.increment(:up_to_date)
@@ -75,11 +90,6 @@ posts.each do |post|
     end
 
     logger.info "#{repo.name}: Updating from '#{post.description}' to '#{canonical_description}'"
-
-    tags = post.tag
-    tags << 'github' unless tags.include?('github')
-    tags << 'pinboard-fixup-github-titles' unless tags.include?('pinboard-fixup-github-titles')
-    tags << repo.language
 
     pinboard.add(
       url: post.href,
