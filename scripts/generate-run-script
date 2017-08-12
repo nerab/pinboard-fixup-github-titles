@@ -16,8 +16,7 @@ __END__
 #!/bin/sh
 
 docker run \
-    --env GITHUB_LOGIN=<%= GITHUB_LOGIN %> \
-    --env GITHUB_PASSWORD=<%= GITHUB_PASSWORD %> \
+    --env GITHUB_ACCESS_TOKEN=<%= GITHUB_ACCESS_TOKEN %> \
     --env PINBOARD_API_TOKEN=<%= PINBOARD_API_TOKEN %> \
     --name pinboard-fixup-github-titles \
   nerab/pinboard-fixup-github-titles:latest

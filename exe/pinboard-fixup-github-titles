@@ -5,7 +5,9 @@ require 'logger'
 require 'netrc'
 require 'octokit'
 require 'pinboard'
+require 'open-uri'
 
+$LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
 require 'pinboard_fixup_github_titles'
 include PinboardFixupGithubTitles
 
@@ -112,7 +114,7 @@ posts.each do |post|
     stats.increment(:updated)
   rescue => error
     stats.increment(:errors)
-    logger.error "Could not handle #{post.href}: #{error.message}"
+    logger.error "Could not handle #{post.href}: #{error.class} - #{error.message}"
     show_rate_limit(github.rate_limit, logger)
   end
 end

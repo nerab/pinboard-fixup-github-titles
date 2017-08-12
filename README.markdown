@@ -20,7 +20,7 @@ The page titles that github produces suck. The repo's description is much more u
 
 1. Run the tool:
 
-        $ pinboard-fixup-github-titles
+        $ bundle exec exe/pinboard-fixup-github-titles
 
 The tool will read your github credentials from `netrc`.
 
