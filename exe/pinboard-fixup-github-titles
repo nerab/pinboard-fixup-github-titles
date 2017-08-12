@@ -5,6 +5,7 @@ require 'logger'
 require 'netrc'
 require 'octokit'
 require 'pinboard'
+require 'English'
 
 require 'pinboard_fixup_github_titles'
 include PinboardFixupGithubTitles
