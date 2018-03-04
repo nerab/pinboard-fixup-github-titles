@@ -1,2 +1,2 @@
-* Try https://registry.hub.docker.com/u/frolvlad/alpine-ruby/ to make the docker image smaller
-* Handle 404s (mail the pinboard account owner, update the bookmark and tag as not found, or even delete the bookmark altogether)
+* If the URL ends with #something, remove it. Octokit gets confused by that: "https://github.com/sstephenson/bats#readme: Octokit::InvalidRepository - Invalid Repository. Use user/repo format."
+* Handle Octokit::NotFound (mail the pinboard account owner, tag the bookmark as not found, or even delete the bookmark altogether)

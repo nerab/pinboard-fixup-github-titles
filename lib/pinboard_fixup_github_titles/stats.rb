@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# TODO Replace with the better version from ~/workspace/pinboard-fixup-tweets/lib/pinboard-fixup-tweets/stats.rb
+
 module PinboardFixupGithubTitles
   class Stats
     class Tracked
