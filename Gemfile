@@ -2,23 +2,23 @@
 
 source 'https://rubygems.org'
 
-gem 'octokit'
-gem 'pinboard'
 gem 'netrc'
 gem 'nokogiri'
+gem 'octokit'
+gem 'pinboard'
 
 group 'development' do
   gem 'bundler'
-  gem 'rake'
-  gem 'rubocop'
-  gem 'minitest'
-  gem 'guard-minitest'
   gem 'guard-bundler'
+  gem 'guard-minitest'
   gem 'libnotify'
-  gem 'rb-inotify'
-  gem 'rb-fsevent'
+  gem 'minitest'
   gem 'pry'
   gem 'pry-nav'
   gem 'pry-stack_explorer'
+  gem 'rake'
+  gem 'rb-fsevent'
+  gem 'rb-inotify'
   gem 'rb-readline'
+  gem 'rubocop'
 end

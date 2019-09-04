@@ -24,7 +24,7 @@ rescue NameError
   logger.warn("Error evaluating log level #{desired_log_level}. Using #{Logger::Severity.constants[logger.level]} instead.")
 end
 
-if pinboard_api_token = ENV['PINBOARD_API_TOKEN']
+if (pinboard_api_token = ENV['PINBOARD_API_TOKEN'])
   pinboard = Pinboard::Client.new(token: pinboard_api_token)
   logger.info "Logged on to Pinboard as #{pinboard_api_token.split(':').first}"
 else
@@ -49,8 +49,8 @@ end
 # Authentication is required due to Github's API rate limit
 begin
   github = Octokit::Client.new(GithubCredentialsResolver.new.resolve)
-rescue GithubCredentialsResolver::MissingCredentials => error
-  logger.error error.message
+rescue GithubCredentialsResolver::MissingCredentials => e
+  logger.error e.message
   exit 2
 end
 
@@ -68,7 +68,9 @@ stats = Stats.new
 stats.gauge(:total, posts.size)
 
 def page_title(url)
+  # rubocop:disable Security/Open
   Nokogiri::HTML(open(url)).at_css('h1.gh-header-title').text
+  # rubocop:enable Security/Open
 end
 
 def show_rate_limit(rate, logger)
@@ -82,62 +84,67 @@ show_rate_limit(github.rate_limit, logger)
 
 # rubocop:disable Metrics/BlockLength
 posts.each do |post|
-  begin
-    unless md = %r{//github.com/([^/]+/[^/]+)}.match(post.href)
-      stats.increment(:not_applicable)
-      next
-    end
-
-    repo = github.repo(md[1])
-
-    if repo.description.nil? || repo.description.empty?
-      stats.increment(:empty)
-      logger.warn "#{repo.name}: Skipping because there is no description in the github repo."
-      next
-    end
-
-    tags = post.tag
-    tags << 'github' unless tags.include?('github')
-    tags << 'pinboard-fixup-github-titles' unless tags.include?('pinboard-fixup-github-titles')
-    tags << repo.language
-
-    if %r{//github.com/([^/]+/[^/]+)/wiki}.match(post.href)
-      canonical_description = "#{repo.name}: #{page_title(post.href)}"
-      tags << 'wiki' unless tags.include?('wiki')
-      stats.increment(:wiki)
-     else
-      canonical_description = "#{repo.name}: #{repo.description}"
-    end
-
-    if post.description == canonical_description
-      stats.increment(:up_to_date)
-      logger.info "#{repo.name}: Up to date"
-      next
-    end
-
-    if dry_run
-      logger.info "#{repo.name}: NOT updating (dry-run) from '#{post.description}' to '#{canonical_description}'"
-      next
-    end
-
-    logger.info "#{repo.name}: Updating description from '#{post.description}' to '#{canonical_description}'"
-
-    pinboard.add(
-      url: post.href,
-      description: canonical_description,
-      extended: post.extended,
-      tags: tags,
-      replace: 'yes',
-      shared: post.shared ? post.shared : 'yes',
-      toread: post.toread,
-    )
-
-    stats.increment(:updated)
-  rescue => error
-    stats.increment(:errors)
-    logger.error "Could not handle #{post.href}: #{error.class} - #{error.message}"
-    show_rate_limit(github.rate_limit, logger)
+  unless (md = %r{//github.com/([^/]+/[^/]+)}.match(post.href))
+    stats.increment(:not_applicable)
+    next
   end
+
+  repo = github.repo(md[1])
+
+  if repo.description.nil? || repo.description.empty?
+    stats.increment(:empty)
+    logger.warn "#{repo.name}: Skipping because there is no description in the github repo."
+    next
+  end
+
+  tags = post.tag.extend(IncludeAll)
+  tags << 'github' unless tags.include?('github')
+  tags << 'pinboard-fixup-github-titles' unless tags.include?('pinboard-fixup-github-titles')
+  tags << repo.language
+
+  if %r{//github.com/([^/]+/[^/]+)/wiki}.match(post.href)
+    canonical_description = "#{repo.name}: #{page_title(post.href)}"
+    tags << 'wiki' unless tags.include?('wiki')
+    stats.increment(:wiki)
+  else
+    canonical_description = "#{repo.name}: #{repo.description}"
+  end
+
+  github_tags = github.topics(repo.full_name, accept: 'application/vnd.github.mercy-preview+json').names
+
+  if post.description == canonical_description && tags.include_all?(github_tags)
+    stats.increment(:up_to_date)
+    logger.info "#{repo.name}: Up to date"
+    next
+  end
+
+  unified_tags = tags.concat(github_tags).uniq
+
+  if dry_run
+    logger.info "#{repo.name}: NOT updating (dry-run) from '#{post.description}' to '#{canonical_description}'"
+    logger.info "#{repo.name}: NOT updating (dry-run) tags from '#{post.tag.join(', ')}' to '#{unified_tags.join(', ')}'"
+    next
+  end
+
+  logger.info "#{repo.name}: Updating description from '#{post.description}' to '#{canonical_description}'"
+  logger.info "#{repo.name}: Updating tags from '#{post.tag.join(', ')}' to '#{unified_tags.join(', ')}'"
+
+  pinboard.add(
+    url: post.href,
+    description: canonical_description,
+    extended: post.extended,
+    tags: unified_tags,
+    replace: 'yes',
+    shared: post.shared || 'yes',
+    toread: post.toread
+  )
+
+  stats.increment(:updated)
+rescue StandardError => e
+  stats.increment(:errors)
+  logger.error "Could not handle #{post.href}: #{e.class} - #{e.message}"
+  show_rate_limit(github.rate_limit, logger)
 end
+# rubocop:enable Metrics/BlockLength
 
 logger.info "Done: #{stats}"
