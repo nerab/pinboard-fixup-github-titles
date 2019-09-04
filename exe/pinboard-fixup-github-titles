@@ -6,6 +6,7 @@ require 'netrc'
 require 'octokit'
 require 'pinboard'
 require 'open-uri'
+require 'optparse'
 
 $LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
 require 'pinboard_fixup_github_titles'
@@ -14,6 +15,7 @@ include PinboardFixupGithubTitles
 logger = Logger.new(STDERR)
 logger.progname = File.basename(__FILE__)
 desired_log_level = ENV.fetch('LOG_LEVEL', 'INFO')
+dry_run = false
 
 begin
   logger.level = Logger::Severity.const_get(desired_log_level)
@@ -27,6 +29,20 @@ if pinboard_api_token = ENV['PINBOARD_API_TOKEN']
   logger.info "Logged on to Pinboard as #{pinboard_api_token.split(':').first}"
 else
   logger.error 'Pinboard API token missing.'
+  exit 1
+end
+
+begin
+  OptionParser.new do |opts|
+    opts.on('-n',
+            '--dry-run',
+            'Dry run the update. Performs all checks, but does not write to Pinboard.') do
+      logger.info 'Dry-run - not writing back to Pinboard.'
+      dry_run = true
+    end
+  end.parse!
+rescue StandardError => e
+  warn "Error: #{e.message}"
   exit 1
 end
 
@@ -99,7 +115,12 @@ posts.each do |post|
       next
     end
 
-    logger.info "#{repo.name}: Updating from '#{post.description}' to '#{canonical_description}'"
+    if dry_run
+      logger.info "#{repo.name}: NOT updating (dry-run) from '#{post.description}' to '#{canonical_description}'"
+      next
+    end
+
+    logger.info "#{repo.name}: Updating description from '#{post.description}' to '#{canonical_description}'"
 
     pinboard.add(
       url: post.href,
