@@ -1,5 +1,7 @@
 # Fixup titles of Pinboard-bookmarked github repos
 
+[![Build Status](https://travis-ci.org/nerab/pinboard-fixup-github-titles.svg?branch=master)](https://travis-ci.org/nerab/pinboard-fixup-github-titles)
+
 The page titles that github produces suck. The repo's description is much more useful. This script walks through all your Pinboard bookmarks that point to a github repo and updates its title to be of the form:
 
     <project name>: <project description>
