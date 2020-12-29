@@ -12,7 +12,7 @@ $LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
 require 'pinboard_fixup_github_titles'
 include PinboardFixupGithubTitles
 
-logger = Logger.new(STDERR)
+logger = Logger.new($stderr)
 logger.progname = File.basename(__FILE__)
 desired_log_level = ENV.fetch('LOG_LEVEL', 'INFO')
 dry_run = false

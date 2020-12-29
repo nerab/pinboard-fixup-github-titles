@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 3.0
   Include:
     - '**/Gemfile'
     - '**/Guardfile'
@@ -10,13 +10,16 @@ AllCops:
     - vendor/**/*
     - db/migrations/**/*
 
+  NewCops: enable
+  SuggestExtensions: false
+
   DisplayCopNames:
     Enabled: true
 
   DisplayStyleGuide:
     Enabled: true
 
-Metrics/LineLength:
+Style/LineLength:
   Max: 180
 
 Metrics/MethodLength:
@@ -24,3 +27,57 @@ Metrics/MethodLength:
 
 Style/MixinUsage:
   Enabled: false
+
+Layout/SpaceBeforeBrackets:
+  Enabled: true
+
+Lint/AmbiguousAssignment:
+  Enabled: true
+
+Lint/DuplicateBranch:
+  Enabled: true
+
+Lint/DuplicateRegexpCharacterClassElement:
+  Enabled: true
+
+Lint/EmptyBlock:
+  Enabled: true
+
+Lint/EmptyClass:
+  Enabled: true
+
+Lint/NoReturnInBeginEndBlocks:
+  Enabled: true
+
+Lint/ToEnumArguments:
+  Enabled: true
+
+Lint/UnexpectedBlockArity:
+  Enabled: true
+
+Lint/UnmodifiedReduceAccumulator:
+  Enabled: true
+
+Style/ArgumentsForwarding:
+  Enabled: true
+
+Style/CollectionCompact:
+  Enabled: true
+
+Style/DocumentDynamicEvalDefinition:
+  Enabled: true
+
+Style/HashExcept:
+  Enabled: true
+
+Style/NegatedIfElseCondition:
+  Enabled: true
+
+Style/NilLambda:
+  Enabled: true
+
+Style/RedundantArgument:
+  Enabled: true
+
+Style/SwapValues:
+  Enabled: true

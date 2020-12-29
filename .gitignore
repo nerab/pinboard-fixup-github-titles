@@ -1,3 +1,10 @@
+*.a
+*.bundle
+*.o
+*.so
+.cache_rake_t
+.envrc
+.rake_tasks
 /.bundle/
 /.yardoc
 /Gemfile.lock
@@ -7,12 +14,6 @@
 /pkg/
 /spec/reports/
 /tmp/
-*.bundle
-*.so
-*.o
-*.a
-mkmf.log
-.cache_rake_t
-scripts/run.sh
 config.yml
-.envrc
+mkmf.log
+scripts/run.sh
