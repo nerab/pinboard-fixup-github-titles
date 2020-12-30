@@ -5,7 +5,8 @@ source 'https://rubygems.org'
 gem 'netrc'
 gem 'nokogiri'
 gem 'octokit'
-gem 'pinboard'
+# TODO Change to '~> 1.1' once it's published
+gem 'pinboard', git: 'https://github.com/nerab/pinboard.git', branch: 'update-for-ruby-3.0'
 
 group 'development' do
   gem 'bundler'
