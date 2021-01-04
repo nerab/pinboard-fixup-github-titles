@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'netrc'
-gem 'nokogiri'
+gem 'nokogiri', '> 1.10.10'
 gem 'octokit'
 # TODO Change to '~> 1.1' once it's published
 gem 'pinboard', git: 'https://github.com/nerab/pinboard.git', branch: 'update-for-ruby-3.0'
